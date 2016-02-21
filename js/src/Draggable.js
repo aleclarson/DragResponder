@@ -14,11 +14,16 @@ EVENT_KEYS = ["shouldRespondOnStart", "shouldCaptureOnStart", "shouldCaptureOnMo
 
 PAN_METHODS = ["onStartShouldSetPanResponder", "onStartShouldSetPanResponderCapture", "onMoveShouldSetPanResponderCapture", "onPanResponderGrant", "onPanResponderMove", "onPanResponderRelease"];
 
-module.exports = Factory("DraggableAxis", {
+module.exports = Factory("Draggable", {
   optionTypes: {
-    axis: OneOf(["x", "y"])
+    axis: OneOf(["x", "y"]),
+    shouldRespondOnStart: [Function, Void],
+    shouldCaptureOnStart: [Function, Void],
+    shouldCaptureOnMove: [Function, Void],
+    onDragStart: [Function, Void],
+    onDrag: [Function, Void],
+    onDragEnd: [Function, Void]
   },
-  events: EVENT_KEYS,
   boundMethods: PAN_METHODS,
   customValues: {
     mixin: {
@@ -63,7 +68,7 @@ module.exports = Factory("DraggableAxis", {
     shouldRespond = typeof (base = this._handlers).shouldRespondOnStart === "function" ? base.shouldRespondOnStart() : void 0;
     return shouldRespond != null ? shouldRespond : shouldRespond = false;
   },
-  onStartShouldSetResponderCapture: function(event, gesture) {
+  onStartShouldSetPanResponderCapture: function(event, gesture) {
     var base, shouldCapture;
     this.isEligible = true;
     shouldCapture = typeof (base = this._handlers).shouldCaptureOnStart === "function" ? base.shouldCaptureOnStart() : void 0;
@@ -90,19 +95,26 @@ module.exports = Factory("DraggableAxis", {
     this.isDragging = true;
     this.offset.stopAnimation();
     this.startOffset = this.offset.value;
-    return typeof (base = this._handlers).onDragStart === "function" ? base.onDragStart() : void 0;
+    return typeof (base = this._handlers).onDragStart === "function" ? base.onDragStart({
+      position: getPosition(gesture, this.x)
+    }) : void 0;
   },
   onPanResponderMove: function(event, gesture) {
     var base, distance;
-    distance = getDistance(gesture);
+    distance = getDistance(gesture, this.x);
     this.offset.value = this.startOffset + distance;
-    return typeof (base = this._handlers).onDrag === "function" ? base.onDrag() : void 0;
+    return typeof (base = this._handlers).onDrag === "function" ? base.onDrag({
+      position: getPosition(gesture, this.x),
+      distance: getDistance(gesture, this.x)
+    }) : void 0;
   },
   onPanResponderRelease: function(event, gesture) {
     var base;
     this.isDragging = false;
     return typeof (base = this._handlers).onDragEnd === "function" ? base.onDragEnd({
-      velocity: getVelocity(gesture)
+      velocity: getVelocity(gesture, this.x),
+      position: getPosition(gesture, this.x),
+      distance: getDistance(gesture, this.x)
     }) : void 0;
   }
 });

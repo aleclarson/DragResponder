@@ -25,12 +25,16 @@ PAN_METHODS = [
   "onPanResponderRelease"
 ]
 
-module.exports = Factory "DraggableAxis",
+module.exports = Factory "Draggable",
 
   optionTypes:
     axis: OneOf [ "x", "y" ]
-
-  events: EVENT_KEYS
+    shouldRespondOnStart: [ Function, Void ]
+    shouldCaptureOnStart: [ Function, Void ]
+    shouldCaptureOnMove: [ Function, Void ]
+    onDragStart: [ Function, Void ]
+    onDrag: [ Function, Void ]
+    onDragEnd: [ Function, Void ]
 
   boundMethods: PAN_METHODS
 
@@ -58,7 +62,7 @@ module.exports = Factory "DraggableAxis",
     shouldRespond = @_handlers.shouldRespondOnStart?()
     shouldRespond ?= no
 
-  onStartShouldSetResponderCapture: (event, gesture) ->
+  onStartShouldSetPanResponderCapture: (event, gesture) ->
     @isEligible = yes
     shouldCapture = @_handlers.shouldCaptureOnStart?()
     shouldCapture ?= no
@@ -77,17 +81,24 @@ module.exports = Factory "DraggableAxis",
     @offset.stopAnimation()
     # @offset.value = roundToScreenScale @offset.value
     @startOffset = @offset.value
-    @_handlers.onDragStart?()
+    @_handlers.onDragStart? {
+      position: getPosition gesture, @x
+    }
 
   onPanResponderMove: (event, gesture) ->
-    distance = getDistance gesture
+    distance = getDistance gesture, @x
     @offset.value = @startOffset + distance
-    @_handlers.onDrag?()
+    @_handlers.onDrag? {
+      position: getPosition gesture, @x
+      distance: getDistance gesture, @x
+    }
 
   onPanResponderRelease: (event, gesture) ->
     @isDragging = no
     @_handlers.onDragEnd? {
-      velocity: getVelocity gesture
+      velocity: getVelocity gesture, @x
+      position: getPosition gesture, @x
+      distance: getDistance gesture, @x
     }
 
 createMixin = (draggable) ->
