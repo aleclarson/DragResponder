@@ -1,155 +1,125 @@
-var CAPTURE_DISTANCE, EVENT_KEYS, Factory, NativeValue, OneOf, PAN_METHODS, createMixin, getDistance, getDistanceXY, getPosition, getVelocity, isDominant, objectify;
+var CAPTURE_DISTANCE, Factory, Gesture, NativeValue, Responder, emptyFunction;
 
 NativeValue = require("component").NativeValue;
 
-OneOf = require("type-utils").OneOf;
+Responder = require("gesture").Responder;
 
-objectify = require("objectify");
+emptyFunction = require("emptyFunction");
 
 Factory = require("factory");
 
+Gesture = require("./Gesture");
+
 CAPTURE_DISTANCE = 10;
 
-EVENT_KEYS = ["shouldRespondOnStart", "shouldCaptureOnStart", "shouldCaptureOnMove", "onDragStart", "onDrag", "onDragEnd"];
-
-PAN_METHODS = ["onStartShouldSetPanResponder", "onStartShouldSetPanResponderCapture", "onMoveShouldSetPanResponderCapture", "onPanResponderGrant", "onPanResponderMove", "onPanResponderRelease"];
-
 module.exports = Factory("Draggable", {
+  kind: Responder,
   optionTypes: {
-    axis: OneOf(["x", "y"]),
-    shouldRespondOnStart: [Function, Void],
-    shouldCaptureOnStart: [Function, Void],
-    shouldCaptureOnMove: [Function, Void],
-    onDragStart: [Function, Void],
-    onDrag: [Function, Void],
-    onDragEnd: [Function, Void]
+    axis: Gesture.Axis,
+    canDrag: Function,
+    shouldCaptureAtVelocity: Function
   },
-  boundMethods: PAN_METHODS,
+  optionDefaults: {
+    canDrag: emptyFunction.thatReturnsTrue,
+    shouldCaptureAtVelocity: emptyFunction.thatReturnsFalse
+  },
   customValues: {
-    mixin: {
-      lazy: function() {
-        return createMixin(this);
-      }
-    },
-    transform: {
-      lazy: function() {
-        if (this.x) {
-          return {
-            translateX: this.offset
-          };
-        } else {
-          return {
-            translateY: this.offset
-          };
-        }
+    startOffset: {
+      get: function() {
+        return this._startOffset;
+      },
+      set: function(newValue) {
+        this.offset.value = newValue;
+        return this._startOffset = newValue;
       }
     }
   },
   initFrozenValues: function(options) {
     return {
-      x: options.axis === "x",
-      y: options.axis === "y",
       axis: options.axis,
-      offset: NativeValue(0),
-      _handlers: objectify({
-        keys: EVENT_KEYS,
-        values: options
-      })
+      offset: NativeValue(0)
+    };
+  },
+  initValues: function(options) {
+    return {
+      _eligible: false,
+      _canDrag: options.canDrag,
+      _shouldCaptureAtVelocity: options.shouldCaptureAtVelocity
     };
   },
   initReactiveValues: function() {
     return {
-      isEligible: true,
-      isDragging: false
+      _startOffset: null,
+      _gesture: null
     };
   },
-  onStartShouldSetPanResponder: function(event, gesture) {
-    var base, shouldRespond;
-    shouldRespond = typeof (base = this._handlers).shouldRespondOnStart === "function" ? base.shouldRespondOnStart() : void 0;
-    return shouldRespond != null ? shouldRespond : shouldRespond = false;
+  _isDominantAxis: function(a, b) {
+    return (a - 2) > b && (a >= CAPTURE_DISTANCE);
   },
-  onStartShouldSetPanResponderCapture: function(event, gesture) {
-    var base, shouldCapture;
-    this.isEligible = true;
-    shouldCapture = typeof (base = this._handlers).shouldCaptureOnStart === "function" ? base.shouldCaptureOnStart() : void 0;
-    return shouldCapture != null ? shouldCapture : shouldCapture = false;
+  _getDominantAxis: function() {
+    var dx, dy;
+    dx = Math.abs(this._gesture.dx);
+    dy = Math.abs(this._gesture.dy);
+    if (this._isDominantAxis(dx, dy)) {
+      return "x";
+    }
+    if (this._isDominantAxis(dy, dx)) {
+      return "y";
+    }
+    return null;
   },
-  onMoveShouldSetPanResponderCapture: function(event, gesture) {
-    var distance, dx, dy;
-    if (!this.isEligible) {
+  _onStartShouldSetPanResponderCapture: function(gesture) {
+    if (!this._enabled) {
       return false;
     }
-    distance = getDistanceXY(gesture, this.x);
-    dx = Math.abs(distance.x);
-    dy = Math.abs(distance.y);
-    if (isDominant(dy, dx)) {
+    log.it("Responder._shouldCaptureOnStart()");
+    this._eligible = true;
+    this._gesture = Gesture({
+      gesture: gesture,
+      axis: this.axis
+    });
+    if (!this._canDrag(this._gesture)) {
+      return false;
+    }
+    if (this.offset.isAnimating && this._shouldCaptureAtVelocity(Math.abs(this.offset.velocity))) {
+      this.offset.stopAnimation();
       return true;
     }
-    if (isDominant(dx, dy)) {
-      this.isEligible = false;
+    return this._shouldCaptureOnStart(this._gesture);
+  },
+  _onMoveShouldSetPanResponderCapture: function() {
+    var dominantAxis;
+    if (!this._enabled) {
+      return false;
     }
-    return false;
+    if (!this._eligible) {
+      return false;
+    }
+    this._gesture._updateValues();
+    if (!this._canDrag(this._gesture)) {
+      return false;
+    }
+    dominantAxis = this._getDominantAxis();
+    if (dominantAxis === null) {
+      return false;
+    }
+    if (dominantAxis !== this.axis) {
+      return this._eligible = false;
+    }
+    return this._shouldCaptureOnMove(this._gesture);
   },
-  onPanResponderGrant: function(event, gesture) {
-    var base;
-    this.isDragging = true;
-    this.offset.stopAnimation();
-    this.startOffset = this.offset.value;
-    return typeof (base = this._handlers).onDragStart === "function" ? base.onDragStart({
-      position: getPosition(gesture, this.x)
-    }) : void 0;
+  _onPanResponderGrant: function() {
+    this._startOffset = this.offset.value;
+    return Responder.prototype._onPanResponderGrant.call(this);
   },
-  onPanResponderMove: function(event, gesture) {
-    var base, distance;
-    distance = getDistance(gesture, this.x);
-    this.offset.value = this.startOffset + distance;
-    return typeof (base = this._handlers).onDrag === "function" ? base.onDrag({
-      position: getPosition(gesture, this.x),
-      distance: getDistance(gesture, this.x)
-    }) : void 0;
-  },
-  onPanResponderRelease: function(event, gesture) {
-    var base;
-    this.isDragging = false;
-    return typeof (base = this._handlers).onDragEnd === "function" ? base.onDragEnd({
-      velocity: getVelocity(gesture, this.x),
-      position: getPosition(gesture, this.x),
-      distance: getDistance(gesture, this.x)
-    }) : void 0;
+  _onPanResponderMove: function() {
+    if (!this._gesture) {
+      return;
+    }
+    this._gesture._updateValues();
+    this.offset.value = this._startOffset + this._gesture.distance;
+    return Responder.prototype._onPanResponderMove.call(this);
   }
 });
-
-createMixin = function(draggable) {
-  var methods, responder;
-  methods = objectify({
-    keys: PAN_METHODS,
-    values: draggable
-  });
-  responder = PanResponder.create(methods);
-  return responder.panHandlers;
-};
-
-isDominant = function(a, b) {
-  return (a - 2) > b && (a >= CAPTURE_DISTANCE);
-};
-
-getPosition = function(gesture, x) {
-  return gesture[x ? "moveX" : "moveY"];
-};
-
-getVelocity = function(gesture, x) {
-  return gesture[x ? "vx" : "vy"];
-};
-
-getDistance = function(gesture, x) {
-  return gesture[x ? "dx" : "dy"];
-};
-
-getDistanceXY = function(gesture, x) {
-  return {
-    x: gesture[x ? "dy" : "dx"],
-    y: gesture[x ? "dx" : "dy"]
-  };
-};
 
 //# sourceMappingURL=../../map/src/Draggable.map
