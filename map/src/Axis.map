@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "Axis.js",
+  "sourceRoot": "../../src",
+  "sources": [
+    "Axis.coffee"
+  ],
+  "names": [],
+  "mappings": "AACA,IAAA;;AAAE,QAAU,OAAA,CAAQ,YAAR,EAAV;;AAEF,MAAM,CAAC,OAAP,GAAiB,KAAA,CAAM,CAAE,GAAF,EAAO,GAAP,CAAN"
+}

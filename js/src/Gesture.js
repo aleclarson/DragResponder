@@ -1,12 +1,10 @@
-var Axis, DISTANCE, Factory, Gesture, OneOf, POSITION, VELOCITY;
-
-OneOf = require("type-utils").OneOf;
+var Axis, DISTANCE, Factory, Gesture, POSITION, VELOCITY;
 
 Gesture = require("gesture");
 
 Factory = require("factory");
 
-Axis = OneOf(["x", "y"]);
+Axis = require("./Axis");
 
 DISTANCE = {
   x: "dx",
@@ -24,81 +22,52 @@ VELOCITY = {
 };
 
 module.exports = Factory("Draggable_Gesture", {
-  statics: {
-    Axis: Axis
-  },
   kind: Gesture,
   optionTypes: {
-    axis: Axis,
-    gesture: Object
+    axis: Axis
   },
   customValues: {
     startPosition: {
       get: function() {
-        return this._startPosition;
+        if (this._horizontal) {
+          return this.x0;
+        } else {
+          return this.y0;
+        }
       }
     },
     position: {
       get: function() {
-        return this._position;
-      }
-    },
-    startDistance: {
-      get: function() {
-        var distance;
-        distance = this._startDistance;
-        return distance != null ? distance : distance = 0;
+        if (this._horizontal) {
+          return this.x;
+        } else {
+          return this.y;
+        }
       }
     },
     distance: {
       get: function() {
-        return this._distance - this.startDistance;
+        if (this._horizontal) {
+          return this.dx - this._grantDX;
+        } else {
+          return this.dy - this._grantDY;
+        }
       }
     },
     velocity: {
       get: function() {
-        return this._velocity;
+        if (this._horizontal) {
+          return this.vx;
+        } else {
+          return this.vy;
+        }
       }
     }
   },
   initFrozenValues: function(options) {
     return {
-      _axis: options.axis,
-      _gesture: options.gesture
+      _horizontal: options.axis === "x"
     };
-  },
-  initValues: function() {
-    return {
-      _distance: null,
-      _position: null,
-      _velocity: null,
-      _startPosition: null,
-      _startDistance: null
-    };
-  },
-  init: function() {
-    return this._updateAxisValues();
-  },
-  _getAxisValue: function(keymap, axis) {
-    if (axis == null) {
-      axis = this._axis;
-    }
-    return this._gesture[keymap[axis]];
-  },
-  _updateAxisValues: function() {
-    this._distance = this._getAxisValue(DISTANCE);
-    this._position = this._getAxisValue(POSITION);
-    this._velocity = this._getAxisValue(VELOCITY);
-  },
-  _onTouchStart: function() {
-    this._updateAxisValues();
-    this._startDistance = null;
-    this._touching = true;
-  },
-  _onTouchMove: function() {
-    if (this._startDistance == null) {
-      this._startDistance = this._distance;
-    }
   }
 });
 
