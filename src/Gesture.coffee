@@ -17,6 +17,9 @@ module.exports = Factory "Draggable_Gesture",
 
   customValues:
 
+    startOffset: get: ->
+      @_startOffset
+
     startPosition: get: ->
       if @_horizontal then @x0 else @y0
 
@@ -33,3 +36,7 @@ module.exports = Factory "Draggable_Gesture",
   initFrozenValues: (options) ->
 
     _horizontal: options.axis is "x"
+
+  initValues: ->
+
+    _startOffset: null

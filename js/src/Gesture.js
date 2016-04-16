@@ -27,6 +27,11 @@ module.exports = Factory("Draggable_Gesture", {
     axis: Axis
   },
   customValues: {
+    startOffset: {
+      get: function() {
+        return this._startOffset;
+      }
+    },
     startPosition: {
       get: function() {
         if (this._horizontal) {
@@ -67,6 +72,11 @@ module.exports = Factory("Draggable_Gesture", {
   initFrozenValues: function(options) {
     return {
       _horizontal: options.axis === "x"
+    };
+  },
+  initValues: function() {
+    return {
+      _startOffset: null
     };
   }
 });

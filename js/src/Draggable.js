@@ -24,27 +24,12 @@ module.exports = Factory("Draggable", {
   kind: Responder,
   optionTypes: {
     axis: Axis,
-    canDrag: Function,
-    shouldCaptureAtVelocity: Function
+    canDrag: Function
   },
   optionDefaults: {
     canDrag: emptyFunction.thatReturnsTrue,
-    shouldCaptureAtVelocity: emptyFunction.thatReturnsFalse,
+    shouldRespondOnStart: emptyFunction.thatReturnsFalse,
     shouldCaptureOnMove: emptyFunction.thatReturnsTrue
-  },
-  customValues: {
-    startOffset: {
-      get: function() {
-        return this._startOffset;
-      },
-      set: function(newValue, oldValue) {
-        if (newValue === oldValue) {
-          return;
-        }
-        this._startOffset = newValue;
-        return this.offset.value = newValue;
-      }
-    }
   },
   initFrozenValues: function(options) {
     return {
@@ -53,8 +38,8 @@ module.exports = Factory("Draggable", {
       _lockedAxis: LazyVar((function(_this) {
         return function() {
           var dx, dy;
-          dx = Math.abs(_this._gesture.dx);
-          dy = Math.abs(_this._gesture.dy);
+          dx = Math.abs(_this.gesture.dx);
+          dy = Math.abs(_this.gesture.dy);
           if (_this._isAxisDominant(dx, dy)) {
             return "x";
           }
@@ -68,14 +53,7 @@ module.exports = Factory("Draggable", {
   },
   initValues: function(options) {
     return {
-      _eligible: false,
-      _canDrag: options.canDrag,
-      _shouldCaptureAtVelocity: options.shouldCaptureAtVelocity
-    };
-  },
-  initReactiveValues: function() {
-    return {
-      _startOffset: null
+      _canDrag: options.canDrag
     };
   },
   init: function() {
@@ -84,10 +62,18 @@ module.exports = Factory("Draggable", {
   _isAxisDominant: function(a, b) {
     return (a - 2) > b && (a >= CAPTURE_DISTANCE);
   },
-  _isAxisLocked: function() {
+  _canDragOnStart: function() {
+    if (!this._canDrag(this.gesture)) {
+      this.terminate();
+      return false;
+    }
+    return true;
+  },
+  _canDragOnMove: function() {
     var lockedAxis;
-    if (!this._canDrag(this._gesture)) {
-      return this._eligible = false;
+    if (!this._canDrag(this.gesture)) {
+      this.terminate();
+      return false;
     }
     lockedAxis = this._lockedAxis.get();
     if (lockedAxis === null) {
@@ -95,73 +81,59 @@ module.exports = Factory("Draggable", {
       return false;
     }
     if (lockedAxis !== this.axis) {
-      return this._eligible = false;
+      this.terminate();
+      return false;
     }
     return true;
   },
-  _needsUpdate: function() {
-    if (!Responder.prototype._needsUpdate.apply(this, arguments)) {
+  __createGesture: function(options) {
+    options.axis = this.axis;
+    return Gesture(options);
+  },
+  __shouldRespondOnStart: function() {
+    if (!this._canDragOnStart()) {
       return false;
     }
-    return this._eligible;
+    return Responder.prototype.__shouldRespondOnStart.apply(this, arguments);
   },
-  _setEligibleResponder: function() {
-    this._eligible = true;
-    Responder.prototype._setEligibleResponder.apply(this, arguments);
-  },
-  _getGestureType: function() {
-    return (function(_this) {
-      return function(options) {
-        options.axis = _this.axis;
-        return Gesture(options);
-      };
-    })(this);
-  },
-  _shouldRespondOnStart: function() {
-    if (!this._canDrag(this._gesture)) {
-      return this._eligible = false;
-    }
-    return Responder.prototype._shouldRespondOnStart.apply(this, arguments);
-  },
-  _shouldRespondOnMove: function() {
-    if (!this._isAxisLocked()) {
+  __shouldRespondOnMove: function() {
+    if (!this._canDragOnMove()) {
       return false;
     }
-    return Responder.prototype._shouldRespondOnMove.apply(this, arguments);
+    return Responder.prototype.__shouldRespondOnMove.apply(this, arguments);
   },
-  _shouldCaptureOnStart: function() {
-    if (!this._canDrag(this._gesture)) {
-      return this._eligible = false;
-    }
-    if (this.offset.isAnimating && this._shouldCaptureAtVelocity(Math.abs(this.offset.velocity))) {
-      this.offset.stopAnimation();
-      return true;
-    }
-    return Responder.prototype._shouldCaptureOnStart.apply(this, arguments);
-  },
-  _shouldCaptureOnMove: function() {
-    if (!this._isAxisLocked()) {
+  __shouldCaptureOnStart: function() {
+    if (!this._canDragOnStart()) {
       return false;
     }
-    return Responder.prototype._shouldCaptureOnMove.apply(this, arguments);
+    return Responder.prototype.__shouldCaptureOnStart.apply(this, arguments);
   },
-  _onTouchStart: function() {
-    if (!this._active) {
+  __shouldCaptureOnMove: function() {
+    if (!this._canDragOnMove()) {
+      return false;
+    }
+    return Responder.prototype.__shouldCaptureOnMove.apply(this, arguments);
+  },
+  __onTouchMove: function() {
+    this.gesture.__onTouchMove();
+    if (this.isCaptured) {
+      this.offset.value = this.gesture._startOffset + this.gesture.distance;
+    }
+    return this.didTouchMove.emit(this.gesture);
+  },
+  __onTouchEnd: function(touchCount) {
+    if (touchCount === 0) {
       this._lockedAxis.reset();
     }
-    return Responder.prototype._onTouchStart.apply(this, arguments);
+    return Responder.prototype.__onTouchEnd.apply(this, arguments);
   },
-  _onTouchMove: function(event) {
-    this._gesture._onTouchMove(event);
-    if (this._captured) {
-      this.offset.value = this._startOffset + this._gesture.distance;
+  __onGrant: function() {
+    var ref;
+    if ((ref = this.offset.animation) != null) {
+      ref.stop();
     }
-    this.didTouchMove.emit(this._gesture, event);
-  },
-  _onGrant: function() {
-    this._startOffset = this.offset.value;
-    log.it(this.__id + "._onGrant: { startOffset: " + this._startOffset + " }");
-    Responder.prototype._onGrant.apply(this, arguments);
+    this.gesture._startOffset = this.offset.value;
+    return Responder.prototype.__onGrant.apply(this, arguments);
   }
 });
 

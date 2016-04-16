@@ -1,4 +1,4 @@
 
 { OneOf } = require "type-utils"
 
-module.exports = OneOf [ "x", "y" ]
+module.exports = OneOf "DraggableAxis", [ "x", "y" ]

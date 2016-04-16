@@ -21,21 +21,11 @@ module.exports = Factory "Draggable",
   optionTypes:
     axis: Axis
     canDrag: Function
-    shouldCaptureAtVelocity: Function
 
   optionDefaults:
     canDrag: emptyFunction.thatReturnsTrue
-    shouldCaptureAtVelocity: emptyFunction.thatReturnsFalse
+    shouldRespondOnStart: emptyFunction.thatReturnsFalse
     shouldCaptureOnMove: emptyFunction.thatReturnsTrue
-
-  customValues:
-
-    startOffset:
-      get: -> @_startOffset
-      set: (newValue, oldValue) ->
-        return if newValue is oldValue
-        @_startOffset = newValue
-        @offset.value = newValue
 
   initFrozenValues: (options) ->
 
@@ -44,23 +34,15 @@ module.exports = Factory "Draggable",
     offset: NativeValue 0
 
     _lockedAxis: LazyVar =>
-      dx = Math.abs @_gesture.dx
-      dy = Math.abs @_gesture.dy
+      dx = Math.abs @gesture.dx
+      dy = Math.abs @gesture.dy
       return "x" if @_isAxisDominant dx, dy
       return "y" if @_isAxisDominant dy, dx
       return null
 
   initValues: (options) ->
 
-    _eligible: no
-
     _canDrag: options.canDrag
-
-    _shouldCaptureAtVelocity: options.shouldCaptureAtVelocity
-
-  initReactiveValues: ->
-
-    _startOffset: null
 
   init: ->
     @offset.type = Number
@@ -68,65 +50,90 @@ module.exports = Factory "Draggable",
   _isAxisDominant: (a, b) ->
     (a - 2) > b and (a >= CAPTURE_DISTANCE)
 
-  _isAxisLocked: ->
-    unless @_canDrag @_gesture
-      return @_eligible = no
+  _canDragOnStart: ->
+
+    unless @_canDrag @gesture
+      @terminate()
+      return no
+
+    return yes
+
+  _canDragOnMove: ->
+
+    unless @_canDrag @gesture
+      @terminate()
+      return no
+
     lockedAxis = @_lockedAxis.get()
+
+    # Neither axis is dominant!
     if lockedAxis is null
       @_lockedAxis.reset()
       return no
+
+    # The opposite axis is dominant!
     if lockedAxis isnt @axis
-      return @_eligible = no
+      @terminate()
+      return no
+
+    # Our axis is dominant!
     return yes
 
 #
-# Subclass overrides
+# Responder.prototype
 #
 
-  _needsUpdate: ->
-    return no unless Responder::_needsUpdate.apply this, arguments
-    return @_eligible
-
-  _setEligibleResponder: ->
-    @_eligible = yes
-    Responder::_setEligibleResponder.apply this, arguments
-    return
-
-  _getGestureType: -> (options) =>
+  __createGesture: (options) ->
     options.axis = @axis
     return Gesture options
 
-  _shouldRespondOnStart: ->
-    return @_eligible = no unless @_canDrag @_gesture
-    return Responder::_shouldRespondOnStart.apply this, arguments
+  __shouldRespondOnStart: ->
 
-  _shouldRespondOnMove: ->
-    return no unless @_isAxisLocked()
-    return Responder::_shouldRespondOnMove.apply this, arguments
+    unless @_canDragOnStart()
+      return no
 
-  _shouldCaptureOnStart: ->
-    return @_eligible = no unless @_canDrag @_gesture
-    if @offset.isAnimating and @_shouldCaptureAtVelocity Math.abs @offset.velocity
-      @offset.stopAnimation()
-      return yes
-    return Responder::_shouldCaptureOnStart.apply this, arguments
+    return Responder::__shouldRespondOnStart.apply this, arguments
 
-  _shouldCaptureOnMove: ->
-    return no unless @_isAxisLocked()
-    return Responder::_shouldCaptureOnMove.apply this, arguments
+  __shouldRespondOnMove: ->
 
-  _onTouchStart: ->
-    @_lockedAxis.reset() unless @_active
-    return Responder::_onTouchStart.apply this, arguments
+    unless @_canDragOnMove()
+      return no
 
-  _onTouchMove: (event) ->
-    @_gesture._onTouchMove event
-    @offset.value = @_startOffset + @_gesture.distance if @_captured
-    @didTouchMove.emit @_gesture, event
-    return
+    return Responder::__shouldRespondOnMove.apply this, arguments
 
-  _onGrant: ->
-    @_startOffset = @offset.value
-    log.it "#{@__id}._onGrant: { startOffset: #{@_startOffset} }"
-    Responder::_onGrant.apply this, arguments
-    return
+  __shouldCaptureOnStart: ->
+
+    unless @_canDragOnStart()
+      return no
+
+    return Responder::__shouldCaptureOnStart.apply this, arguments
+
+  __shouldCaptureOnMove: ->
+
+    unless @_canDragOnMove()
+      return no
+
+    return Responder::__shouldCaptureOnMove.apply this, arguments
+
+  __onTouchMove: ->
+
+    @gesture.__onTouchMove()
+
+    @offset.value = @gesture._startOffset + @gesture.distance if @isCaptured
+
+    @didTouchMove.emit @gesture
+
+  __onTouchEnd: (touchCount) ->
+
+    if touchCount is 0
+      @_lockedAxis.reset()
+
+    Responder::__onTouchEnd.apply this, arguments
+
+  __onGrant: ->
+
+    @offset.animation?.stop()
+
+    @gesture._startOffset = @offset.value
+
+    Responder::__onGrant.apply this, arguments
