@@ -31,6 +31,21 @@ module.exports = Factory("Draggable", {
     shouldRespondOnStart: emptyFunction.thatReturnsFalse,
     shouldCaptureOnMove: emptyFunction.thatReturnsTrue
   },
+  customValues: {
+    offsetTransform: {
+      get: function() {
+        if (this.axis === "x") {
+          return {
+            translateX: this.offset
+          };
+        } else {
+          return {
+            translateY: this.offset
+          };
+        }
+      }
+    }
+  },
   initFrozenValues: function(options) {
     return {
       axis: options.axis,
@@ -55,9 +70,6 @@ module.exports = Factory("Draggable", {
     return {
       _canDrag: options.canDrag
     };
-  },
-  init: function() {
-    return this.offset.type = Number;
   },
   _isAxisDominant: function(a, b) {
     return (a - 2) > b && (a >= CAPTURE_DISTANCE);
@@ -117,7 +129,7 @@ module.exports = Factory("Draggable", {
   __onTouchMove: function() {
     this.gesture.__onTouchMove();
     if (this.isCaptured) {
-      this.offset.value = this.gesture._startOffset + this.gesture.distance;
+      this.offset.setValue(this.gesture._startOffset + this.gesture.distance);
     }
     return this.didTouchMove.emit(this.gesture);
   },

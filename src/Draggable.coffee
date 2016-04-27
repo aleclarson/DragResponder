@@ -27,6 +27,12 @@ module.exports = Factory "Draggable",
     shouldRespondOnStart: emptyFunction.thatReturnsFalse
     shouldCaptureOnMove: emptyFunction.thatReturnsTrue
 
+  customValues:
+
+    offsetTransform: get: ->
+      if @axis is "x" then { translateX: @offset }
+      else { translateY: @offset }
+
   initFrozenValues: (options) ->
 
     axis: options.axis
@@ -43,9 +49,6 @@ module.exports = Factory "Draggable",
   initValues: (options) ->
 
     _canDrag: options.canDrag
-
-  init: ->
-    @offset.type = Number
 
   _isAxisDominant: (a, b) ->
     (a - 2) > b and (a >= CAPTURE_DISTANCE)
@@ -119,7 +122,8 @@ module.exports = Factory "Draggable",
 
     @gesture.__onTouchMove()
 
-    @offset.value = @gesture._startOffset + @gesture.distance if @isCaptured
+    if @isCaptured
+      @offset.setValue @gesture._startOffset + @gesture.distance
 
     @didTouchMove.emit @gesture
 
