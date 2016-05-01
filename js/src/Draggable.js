@@ -1,4 +1,4 @@
-var Axis, CAPTURE_DISTANCE, Factory, Gesture, LazyVar, NativeValue, Responder, emptyFunction;
+var Axis, CAPTURE_DISTANCE, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, type;
 
 NativeValue = require("component").NativeValue;
 
@@ -8,7 +8,7 @@ emptyFunction = require("emptyFunction");
 
 LazyVar = require("lazy-var");
 
-Factory = require("factory");
+Type = require("Type");
 
 Gesture = require("./Gesture");
 
@@ -16,61 +16,58 @@ Axis = require("./Axis");
 
 CAPTURE_DISTANCE = 10;
 
-module.exports = Factory("Draggable", {
-  statics: {
-    Gesture: Gesture,
-    Axis: Axis
+type = Type("Draggable");
+
+type.inherits(Responder);
+
+type.defineStatics({
+  Gesture: Gesture,
+  Axis: Axis
+});
+
+type.optionTypes = {
+  axis: Axis,
+  canDrag: Function
+};
+
+type.optionDefaults = {
+  canDrag: emptyFunction.thatReturnsTrue,
+  shouldRespondOnStart: emptyFunction.thatReturnsFalse,
+  shouldCaptureOnMove: emptyFunction.thatReturnsTrue
+};
+
+type.defineFrozenValues({
+  axis: function(options) {
+    return options.axis;
   },
-  kind: Responder,
-  optionTypes: {
-    axis: Axis,
-    canDrag: Function
+  offset: function() {
+    return NativeValue(0);
   },
-  optionDefaults: {
-    canDrag: emptyFunction.thatReturnsTrue,
-    shouldRespondOnStart: emptyFunction.thatReturnsFalse,
-    shouldCaptureOnMove: emptyFunction.thatReturnsTrue
-  },
-  customValues: {
-    offsetTransform: {
-      get: function() {
-        if (this.axis === "x") {
-          return {
-            translateX: this.offset
-          };
-        } else {
-          return {
-            translateY: this.offset
-          };
+  _lockedAxis: function() {
+    return LazyVar((function(_this) {
+      return function() {
+        var dx, dy;
+        dx = Math.abs(_this.gesture.dx);
+        dy = Math.abs(_this.gesture.dy);
+        if (_this._isAxisDominant(dx, dy)) {
+          return "x";
         }
-      }
-    }
-  },
-  initFrozenValues: function(options) {
-    return {
-      axis: options.axis,
-      offset: NativeValue(0),
-      _lockedAxis: LazyVar((function(_this) {
-        return function() {
-          var dx, dy;
-          dx = Math.abs(_this.gesture.dx);
-          dy = Math.abs(_this.gesture.dy);
-          if (_this._isAxisDominant(dx, dy)) {
-            return "x";
-          }
-          if (_this._isAxisDominant(dy, dx)) {
-            return "y";
-          }
-          return null;
-        };
-      })(this))
-    };
-  },
-  initValues: function(options) {
-    return {
-      _canDrag: options.canDrag
-    };
-  },
+        if (_this._isAxisDominant(dy, dx)) {
+          return "y";
+        }
+        return null;
+      };
+    })(this));
+  }
+});
+
+type.defineValues({
+  _canDrag: function(options) {
+    return options.canDrag;
+  }
+});
+
+type.defineMethods({
   _isAxisDominant: function(a, b) {
     return (a - 2) > b && (a >= CAPTURE_DISTANCE);
   },
@@ -97,7 +94,10 @@ module.exports = Factory("Draggable", {
       return false;
     }
     return true;
-  },
+  }
+});
+
+type.overrideMethods({
   __createGesture: function(options) {
     options.axis = this.axis;
     return Gesture(options);
@@ -106,30 +106,30 @@ module.exports = Factory("Draggable", {
     if (!this._canDragOnStart()) {
       return false;
     }
-    return Responder.prototype.__shouldRespondOnStart.apply(this, arguments);
+    return this.__super(arguments);
   },
   __shouldRespondOnMove: function() {
     if (!this._canDragOnMove()) {
       return false;
     }
-    return Responder.prototype.__shouldRespondOnMove.apply(this, arguments);
+    return this.__super(arguments);
   },
   __shouldCaptureOnStart: function() {
     if (!this._canDragOnStart()) {
       return false;
     }
-    return Responder.prototype.__shouldCaptureOnStart.apply(this, arguments);
+    return this.__super(arguments);
   },
   __shouldCaptureOnMove: function() {
     if (!this._canDragOnMove()) {
       return false;
     }
-    return Responder.prototype.__shouldCaptureOnMove.apply(this, arguments);
+    return this.__super(arguments);
   },
   __onTouchMove: function() {
     this.gesture.__onTouchMove();
     if (this.isCaptured) {
-      this.offset.setValue(this.gesture._startOffset + this.gesture.distance);
+      this.offset.value = this.gesture._startOffset + this.gesture.distance;
     }
     return this.didTouchMove.emit(this.gesture);
   },
@@ -137,7 +137,7 @@ module.exports = Factory("Draggable", {
     if (touchCount === 0) {
       this._lockedAxis.reset();
     }
-    return Responder.prototype.__onTouchEnd.apply(this, arguments);
+    return this.__super(arguments);
   },
   __onGrant: function() {
     var ref;
@@ -145,8 +145,10 @@ module.exports = Factory("Draggable", {
       ref.stop();
     }
     this.gesture._startOffset = this.offset.value;
-    return Responder.prototype.__onGrant.apply(this, arguments);
+    return this.__super(arguments);
   }
 });
+
+module.exports = type.build();
 
 //# sourceMappingURL=../../map/src/Draggable.map

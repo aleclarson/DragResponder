@@ -1,42 +1,40 @@
 
 Gesture = require "gesture"
-Factory = require "factory"
+Type = require "Type"
 
 Axis = require "./Axis"
 
-DISTANCE = { x: "dx",    y: "dy" }
-POSITION = { x: "moveX", y: "moveY" }
-VELOCITY = { x: "vx",    y: "vy" }
+type = Type "Draggable_Gesture"
 
-module.exports = Factory "Draggable_Gesture",
+type.inherits Gesture
 
-  kind: Gesture
+type.optionTypes =
+  axis: Axis
 
-  optionTypes:
-    axis: Axis
+type.defineProperties
 
-  customValues:
+  startOffset: get: ->
+    @_startOffset
 
-    startOffset: get: ->
-      @_startOffset
+  startPosition: get: ->
+    if @_horizontal then @x0 else @y0
 
-    startPosition: get: ->
-      if @_horizontal then @x0 else @y0
+  position: get: ->
+    if @_horizontal then @x else @y
 
-    position: get: ->
-      if @_horizontal then @x else @y
+  distance: get: ->
+    if @_horizontal then @dx - @_grantDX
+    else @dy - @_grantDY
 
-    distance: get: ->
-      if @_horizontal then @dx - @_grantDX
-      else @dy - @_grantDY
+  velocity: get: ->
+    if @_horizontal then @vx else @vy
 
-    velocity: get: ->
-      if @_horizontal then @vx else @vy
+type.defineFrozenValues
 
-  initFrozenValues: (options) ->
+  _horizontal: (options) -> options.axis is "x"
 
-    _horizontal: options.axis is "x"
+type.defineValues
 
-  initValues: ->
+  _startOffset: null
 
-    _startOffset: null
+module.exports = type.build()

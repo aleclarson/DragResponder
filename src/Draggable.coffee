@@ -1,57 +1,54 @@
 
 { NativeValue } = require "component"
-
 { Responder } = require "gesture"
 
 emptyFunction = require "emptyFunction"
 LazyVar = require "lazy-var"
-Factory = require "factory"
+Type = require "Type"
 
 Gesture = require "./Gesture"
 Axis = require "./Axis"
 
-CAPTURE_DISTANCE = 10
+type = Type "Draggable"
 
-module.exports = Factory "Draggable",
+type.inherits Responder
 
-  statics: { Gesture, Axis }
+type.defineStatics { Gesture, Axis }
 
-  kind: Responder
+type.optionTypes =
+  axis: Axis
+  canDrag: Function
+  captureDistance: Number
 
-  optionTypes:
-    axis: Axis
-    canDrag: Function
+type.optionDefaults =
+  canDrag: emptyFunction.thatReturnsTrue
+  captureDistance: 10
+  shouldRespondOnStart: emptyFunction.thatReturnsFalse
+  shouldCaptureOnMove: emptyFunction.thatReturnsTrue
 
-  optionDefaults:
-    canDrag: emptyFunction.thatReturnsTrue
-    shouldRespondOnStart: emptyFunction.thatReturnsFalse
-    shouldCaptureOnMove: emptyFunction.thatReturnsTrue
+type.defineFrozenValues
 
-  customValues:
+  axis: (options) -> options.axis
 
-    offsetTransform: get: ->
-      if @axis is "x" then { translateX: @offset }
-      else { translateY: @offset }
+  offset: -> NativeValue 0
 
-  initFrozenValues: (options) ->
+  _captureDistance: (options) -> options.captureDistance
 
-    axis: options.axis
+  _lockedAxis: -> LazyVar =>
+    dx = Math.abs @gesture.dx
+    dy = Math.abs @gesture.dy
+    return "x" if @_isAxisDominant dx, dy
+    return "y" if @_isAxisDominant dy, dx
+    return null
 
-    offset: NativeValue 0
+type.defineValues
 
-    _lockedAxis: LazyVar =>
-      dx = Math.abs @gesture.dx
-      dy = Math.abs @gesture.dy
-      return "x" if @_isAxisDominant dx, dy
-      return "y" if @_isAxisDominant dy, dx
-      return null
+  _canDrag: (options) -> options.canDrag
 
-  initValues: (options) ->
-
-    _canDrag: options.canDrag
+type.defineMethods
 
   _isAxisDominant: (a, b) ->
-    (a - 2) > b and (a >= CAPTURE_DISTANCE)
+    (a - 2) > b and (a >= @_captureDistance)
 
   _canDragOnStart: ->
 
@@ -82,62 +79,40 @@ module.exports = Factory "Draggable",
     # Our axis is dominant!
     return yes
 
-#
-# Responder.prototype
-#
+type.overrideMethods
 
   __createGesture: (options) ->
     options.axis = @axis
     return Gesture options
 
   __shouldRespondOnStart: ->
-
-    unless @_canDragOnStart()
-      return no
-
-    return Responder::__shouldRespondOnStart.apply this, arguments
+    return no unless @_canDragOnStart()
+    return @__super arguments
 
   __shouldRespondOnMove: ->
-
-    unless @_canDragOnMove()
-      return no
-
-    return Responder::__shouldRespondOnMove.apply this, arguments
+    return no unless @_canDragOnMove()
+    return @__super arguments
 
   __shouldCaptureOnStart: ->
-
-    unless @_canDragOnStart()
-      return no
-
-    return Responder::__shouldCaptureOnStart.apply this, arguments
+    return no unless @_canDragOnStart()
+    return @__super arguments
 
   __shouldCaptureOnMove: ->
-
-    unless @_canDragOnMove()
-      return no
-
-    return Responder::__shouldCaptureOnMove.apply this, arguments
+    return no unless @_canDragOnMove()
+    return @__super arguments
 
   __onTouchMove: ->
-
     @gesture.__onTouchMove()
-
-    if @isCaptured
-      @offset.setValue @gesture._startOffset + @gesture.distance
-
+    @offset.value = @gesture._startOffset + @gesture.distance if @isCaptured
     @didTouchMove.emit @gesture
 
   __onTouchEnd: (touchCount) ->
-
-    if touchCount is 0
-      @_lockedAxis.reset()
-
-    Responder::__onTouchEnd.apply this, arguments
+    @_lockedAxis.reset() if touchCount is 0
+    @__super arguments
 
   __onGrant: ->
-
     @offset.animation?.stop()
-
     @gesture._startOffset = @offset.value
+    @__super arguments
 
-    Responder::__onGrant.apply this, arguments
+module.exports = type.build()
