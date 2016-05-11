@@ -1,0 +1,12 @@
+{
+  "name": "draggable",
+  "version": "1.0.0",
+  "main": "./js/src/Draggable",
+  "dependencies": {
+    "component": "aleclarson/component#1.0.0",
+    "emptyFunction": "aleclarson/emptyFunction#1.0.0",
+    "factory": "aleclarson/factory#1.0.0",
+    "gesture": "aleclarson/gesture#1.0.0",
+    "type-utils": "aleclarson/type-utils#1.0.0"
+  }
+}
