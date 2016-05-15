@@ -1,6 +1,6 @@
 var OneOf;
 
-OneOf = require("type-utils").OneOf;
+OneOf = require("OneOf");
 
 module.exports = OneOf("DraggableAxis", ["x", "y"]);
 

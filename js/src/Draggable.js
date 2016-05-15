@@ -1,10 +1,12 @@
-var Axis, CAPTURE_DISTANCE, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, type;
+var Axis, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, getArgProp, type;
 
 NativeValue = require("component").NativeValue;
 
 Responder = require("gesture").Responder;
 
 emptyFunction = require("emptyFunction");
+
+getArgProp = require("getArgProp");
 
 LazyVar = require("lazy-var");
 
@@ -13,8 +15,6 @@ Type = require("Type");
 Gesture = require("./Gesture");
 
 Axis = require("./Axis");
-
-CAPTURE_DISTANCE = 10;
 
 type = Type("Draggable");
 
@@ -27,22 +27,23 @@ type.defineStatics({
 
 type.optionTypes = {
   axis: Axis,
-  canDrag: Function
+  canDrag: Function,
+  captureDistance: Number
 };
 
 type.optionDefaults = {
   canDrag: emptyFunction.thatReturnsTrue,
+  captureDistance: 10,
   shouldRespondOnStart: emptyFunction.thatReturnsFalse,
   shouldCaptureOnMove: emptyFunction.thatReturnsTrue
 };
 
 type.defineFrozenValues({
-  axis: function(options) {
-    return options.axis;
-  },
+  axis: getArgProp("axis"),
   offset: function() {
     return NativeValue(0);
   },
+  _captureDistance: getArgProp("captureDistance"),
   _lockedAxis: function() {
     return LazyVar((function(_this) {
       return function() {
@@ -62,14 +63,12 @@ type.defineFrozenValues({
 });
 
 type.defineValues({
-  _canDrag: function(options) {
-    return options.canDrag;
-  }
+  _canDrag: getArgProp("canDrag")
 });
 
 type.defineMethods({
   _isAxisDominant: function(a, b) {
-    return (a - 2) > b && (a >= CAPTURE_DISTANCE);
+    return (a - 2) > b && (a >= this._captureDistance);
   },
   _canDragOnStart: function() {
     if (!this._canDrag(this.gesture)) {

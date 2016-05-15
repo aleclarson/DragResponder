@@ -3,6 +3,7 @@
 { Responder } = require "gesture"
 
 emptyFunction = require "emptyFunction"
+getArgProp = require "getArgProp"
 LazyVar = require "lazy-var"
 Type = require "Type"
 
@@ -28,11 +29,11 @@ type.optionDefaults =
 
 type.defineFrozenValues
 
-  axis: (options) -> options.axis
+  axis: getArgProp "axis"
 
   offset: -> NativeValue 0
 
-  _captureDistance: (options) -> options.captureDistance
+  _captureDistance: getArgProp "captureDistance"
 
   _lockedAxis: -> LazyVar =>
     dx = Math.abs @gesture.dx
@@ -43,7 +44,7 @@ type.defineFrozenValues
 
 type.defineValues
 
-  _canDrag: (options) -> options.canDrag
+  _canDrag: getArgProp "canDrag"
 
 type.defineMethods
 
