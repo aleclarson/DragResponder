@@ -4,12 +4,12 @@
   "main": "js/src/Draggable",
   "dependencies": {
     "OneOf": "aleclarson/OneOf#1.0.0",
+    "LazyVar": "aleclarson/LazyVar#2.0.0",
     "Type": "aleclarson/Type#1.0.0",
     "component": "aleclarson/component#2.0.0",
     "emptyFunction": "aleclarson/emptyFunction#1.0.0",
     "gesture": "aleclarson/gesture#2.0.0",
-    "getArgProp": "aleclarson/getArgProp#1.0.0",
-    "lazy-var": "aleclarson/lazy-var#2.0.0"
+    "getArgProp": "aleclarson/getArgProp#1.0.0"
   },
   "lotus": {
     "plugins": [

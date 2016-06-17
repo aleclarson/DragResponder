@@ -8,7 +8,7 @@ emptyFunction = require("emptyFunction");
 
 getArgProp = require("getArgProp");
 
-LazyVar = require("lazy-var");
+LazyVar = require("LazyVar");
 
 Type = require("Type");
 
@@ -127,12 +127,12 @@ type.overrideMethods({
   },
   __onTouchMove: function() {
     this.gesture.__onTouchMove();
-    if (this.isCaptured) {
-      this.offset.value = this.gesture._startOffset + this.gesture.distance;
+    if (this.isGranted) {
+      this.offset.value = this.gesture._startOffset - this.gesture.distance;
     }
     return this.didTouchMove.emit(this.gesture);
   },
-  __onTouchEnd: function(touchCount) {
+  __onTouchEnd: function(event, touchCount) {
     if (touchCount === 0) {
       this._lockedAxis.reset();
     }

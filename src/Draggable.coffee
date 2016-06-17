@@ -4,7 +4,7 @@
 
 emptyFunction = require "emptyFunction"
 getArgProp = require "getArgProp"
-LazyVar = require "lazy-var"
+LazyVar = require "LazyVar"
 Type = require "Type"
 
 Gesture = require "./Gesture"
@@ -104,11 +104,14 @@ type.overrideMethods
 
   __onTouchMove: ->
     @gesture.__onTouchMove()
-    @offset.value = @gesture._startOffset + @gesture.distance if @isCaptured
+    @offset.value = @gesture._startOffset - @gesture.distance if @isGranted
     @didTouchMove.emit @gesture
 
-  __onTouchEnd: (touchCount) ->
-    @_lockedAxis.reset() if touchCount is 0
+  __onTouchEnd: (event, touchCount) ->
+
+    if touchCount is 0
+      @_lockedAxis.reset()
+
     @__super arguments
 
   __onGrant: ->
