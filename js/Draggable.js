@@ -125,12 +125,12 @@ type.overrideMethods({
     }
     return this.__super(arguments);
   },
-  __onTouchMove: function() {
-    this.gesture.__onTouchMove();
+  __onTouchMove: function(event) {
+    this.gesture.__onTouchMove(event);
     if (this.isGranted) {
-      this.offset.value = this.gesture._startOffset - this.gesture.distance;
+      this.offset.value = this.gesture._startOffset + this.gesture.distance;
     }
-    return this.didTouchMove.emit(this.gesture);
+    return this._events.emit("didTouchMove", [this.gesture, event]);
   },
   __onTouchEnd: function(event, touchCount) {
     if (touchCount === 0) {

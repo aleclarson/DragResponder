@@ -102,10 +102,10 @@ type.overrideMethods
     return no unless @_canDragOnMove()
     return @__super arguments
 
-  __onTouchMove: ->
-    @gesture.__onTouchMove()
-    @offset.value = @gesture._startOffset - @gesture.distance if @isGranted
-    @didTouchMove.emit @gesture
+  __onTouchMove: (event) ->
+    @gesture.__onTouchMove event
+    @offset.value = @gesture._startOffset + @gesture.distance if @isGranted
+    @_events.emit "didTouchMove", [ @gesture, event ]
 
   __onTouchEnd: (event, touchCount) ->
 
