@@ -150,4 +150,4 @@ type.overrideMethods({
 
 module.exports = type.build();
 
-//# sourceMappingURL=../../map/src/Draggable.map
+//# sourceMappingURL=map/Draggable.map

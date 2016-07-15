@@ -1,7 +1,7 @@
 {
   "name": "draggable",
   "version": "2.0.0",
-  "main": "js/src/Draggable",
+  "main": "js/Draggable",
   "dependencies": {
     "OneOf": "aleclarson/OneOf#1.0.0",
     "LazyVar": "aleclarson/LazyVar#2.0.0",

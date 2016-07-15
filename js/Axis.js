@@ -4,4 +4,4 @@ OneOf = require("OneOf");
 
 module.exports = OneOf("DraggableAxis", ["x", "y"]);
 
-//# sourceMappingURL=../../map/src/Axis.map
+//# sourceMappingURL=map/Axis.map
