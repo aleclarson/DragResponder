@@ -1,29 +1,52 @@
 
-# draggable v1.0.0 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+# draggable 2.0.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
-A [`Gesture.Responder`](https://github.com/aleclarson/gesture#gestureresponder) for controlling a draggable `View`.
+Built for [React Native](https://github.com/facebook/react-native)!
 
-Only supports one axis (x or y) at a time.
+`Draggable` is a subclass of [`Gesture.Responder`](https://github.com/aleclarson/gesture). It provides uni-directional movement tracking.
+
+### Draggable.optionTypes
 
 ```coffee
-Draggable = require "draggable"
+# Either "x" or "y".
+axis: Draggable.Axis
 
-dragY = Draggable
-  axis: "y"
-  canDrag: (gesture) ->
-    # Return `false` if dragging should not be recognized.
-  shouldCaptureAtVelocity: (velocity) ->
-    # When you inevitably animate 'dragY.offset', you can capture the touch at high animation velocity!
+# Return false when dragging should be prevented.
+canDrag: Function
 
-dragY.didTouchStart (gesture) ->
-  # Dragging has begun!
+# The required distance travelled before a drag is recognized.
+# Defaults to 10.
+captureDistance: Number
+```
 
-dragY.didTouchMove (gesture) ->
-  # The user is moving his finger!
+### Draggable.properties
 
-dragY.didTouchEnd (gesture) ->
-  # Dragging has ended!
+```coffee
+# Defaults to 'options.axis'
+drag.axis
 
-# Mix this into the props of a View!
-dragY.touchHandlers
+# A 'NativeValue' that represents the position of the gesture.
+# Feel free to animate this value.
+# Defaults to zero.
+drag.offset
+```
+
+### Draggable.Gesture.properties
+
+```coffee
+# The value of 'drag.offset' when the gesture began.
+gesture.startOffset
+
+# The absolute position when the gesture began.
+gesture.startPosition
+
+# The absolute position at the current time.
+gesture.position
+
+# The distance travelled during the gesture.
+# Does not include 'options.captureDistance'.
+gesture.distance
+
+# The directional velocity at the current time.
+gesture.velocity
 ```
