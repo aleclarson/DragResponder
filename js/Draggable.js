@@ -1,4 +1,4 @@
-var Axis, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, getArgProp, type;
+var Axis, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, fromArgs, type;
 
 NativeValue = require("component").NativeValue;
 
@@ -6,7 +6,7 @@ Responder = require("gesture").Responder;
 
 emptyFunction = require("emptyFunction");
 
-getArgProp = require("getArgProp");
+fromArgs = require("fromArgs");
 
 LazyVar = require("LazyVar");
 
@@ -39,11 +39,11 @@ type.optionDefaults = {
 };
 
 type.defineFrozenValues({
-  axis: getArgProp("axis"),
+  axis: fromArgs("axis"),
   offset: function() {
     return NativeValue(0);
   },
-  _captureDistance: getArgProp("captureDistance"),
+  _captureDistance: fromArgs("captureDistance"),
   _lockedAxis: function() {
     return LazyVar((function(_this) {
       return function() {
@@ -63,7 +63,7 @@ type.defineFrozenValues({
 });
 
 type.defineValues({
-  _canDrag: getArgProp("canDrag")
+  _canDrag: fromArgs("canDrag")
 });
 
 type.defineMethods({
