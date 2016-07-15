@@ -10,9 +10,9 @@ type = Type("Draggable_Gesture");
 
 type.inherits(Gesture);
 
-type.optionTypes = {
-  axis: Axis
-};
+type.defineOptions({
+  axis: Axis.isRequired
+});
 
 type.defineProperties({
   startOffset: {

@@ -16,16 +16,12 @@ type.inherits Responder
 
 type.defineStatics { Gesture, Axis }
 
-type.optionTypes =
-  axis: Axis
-  canDrag: Function
-  captureDistance: Number
-
-type.optionDefaults =
-  canDrag: emptyFunction.thatReturnsTrue
-  captureDistance: 10
-  shouldRespondOnStart: emptyFunction.thatReturnsFalse
-  shouldCaptureOnMove: emptyFunction.thatReturnsTrue
+type.defineOptions
+  axis: Axis.isRequired
+  canDrag: Function.withDefault emptyFunction.thatReturnsTrue
+  captureDistance: Number.withDefault 10
+  shouldRespondOnStart: Function.withDefault emptyFunction.thatReturnsFalse
+  shouldCaptureOnMove: Function.withDefault emptyFunction.thatReturnsTrue
 
 type.defineFrozenValues
 
