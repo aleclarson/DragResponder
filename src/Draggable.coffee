@@ -1,6 +1,6 @@
 
-{ NativeValue } = require "component"
-{ Responder } = require "gesture"
+{NativeValue} = require "component"
+{Responder} = require "gesture"
 
 emptyFunction = require "emptyFunction"
 fromArgs = require "fromArgs"
@@ -14,12 +14,12 @@ type = Type "Draggable"
 
 type.inherits Responder
 
-type.defineStatics { Gesture, Axis }
-
 type.defineOptions
   axis: Axis.isRequired
-  canDrag: Function.withDefault emptyFunction.thatReturnsTrue
+  offset: Number.withDefault 0
+  inverse: Boolean.withDefault no
   captureDistance: Number.withDefault 10
+  canDrag: Function.withDefault emptyFunction.thatReturnsTrue
   shouldRespondOnStart: Function.withDefault emptyFunction.thatReturnsFalse
   shouldCaptureOnMove: Function.withDefault emptyFunction.thatReturnsTrue
 
@@ -27,7 +27,10 @@ type.defineFrozenValues
 
   axis: fromArgs "axis"
 
-  offset: -> NativeValue 0
+  offset: (options) ->
+    NativeValue options.offset
+
+  _inverse: fromArgs "inverse"
 
   _captureDistance: fromArgs "captureDistance"
 
@@ -43,6 +46,10 @@ type.defineValues
   _canDrag: fromArgs "canDrag"
 
 type.defineMethods
+
+  _computeOffset: ({startOffset, distance}) ->
+    @_inverse and distance *= -1
+    return startOffset + distance
 
   _isAxisDominant: (a, b) ->
     (a - 2) > b and (a >= @_captureDistance)
@@ -99,13 +106,15 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
-    @gesture.__onTouchMove event
-    @offset.value = @gesture._startOffset + @gesture.distance if @isGranted
-    @_events.emit "didTouchMove", [ @gesture, event ]
+    {gesture} = this
+    gesture.__onTouchMove event
+    @isGranted and @offset.value = @_computeOffset gesture
+    @_events.emit "didTouchMove", [ gesture, event ]
 
-  __onTouchEnd: (event, touchCount) ->
+  __onTouchEnd: (event) ->
 
-    if touchCount is 0
+    {touches} = event.nativeEvent
+    if touches.length is 0
       @_lockedAxis.reset()
 
     @__super arguments
@@ -114,5 +123,7 @@ type.overrideMethods
     @offset.animation?.stop()
     @gesture._startOffset = @offset.value
     @__super arguments
+
+type.defineStatics { Gesture, Axis }
 
 module.exports = type.build()
