@@ -1,9 +1,8 @@
 
-{NativeValue} = require "component"
+{NativeValue} = require "modx/native"
 {Responder} = require "gesture"
 
 emptyFunction = require "emptyFunction"
-fromArgs = require "fromArgs"
 LazyVar = require "LazyVar"
 Type = require "Type"
 
@@ -17,39 +16,34 @@ type.inherits Responder
 type.defineOptions
   axis: Axis.isRequired
   offset: Number.withDefault 0
-  inverse: Boolean.withDefault no
   captureDistance: Number.withDefault 10
   canDrag: Function.withDefault emptyFunction.thatReturnsTrue
   shouldRespondOnStart: Function.withDefault emptyFunction.thatReturnsFalse
   shouldCaptureOnMove: Function.withDefault emptyFunction.thatReturnsTrue
 
-type.defineFrozenValues
+type.defineFrozenValues (options) ->
 
-  axis: fromArgs "axis"
+  axis: options.axis
 
-  offset: (options) ->
-    NativeValue options.offset
+  offset: NativeValue options.offset
 
-  _inverse: fromArgs "inverse"
+  _captureDistance: options.captureDistance
 
-  _captureDistance: fromArgs "captureDistance"
-
-  _lockedAxis: -> LazyVar =>
+  _lockedAxis: LazyVar =>
     dx = Math.abs @gesture.dx
     dy = Math.abs @gesture.dy
     return "x" if @_isAxisDominant dx, dy
     return "y" if @_isAxisDominant dy, dx
     return null
 
-type.defineValues
+type.defineValues (options) ->
 
-  _canDrag: fromArgs "canDrag"
+  _canDrag: options.canDrag
 
 type.defineMethods
 
-  _computeOffset: ({startOffset, distance}) ->
-    @_inverse and distance *= -1
-    return startOffset + distance
+  _computeOffset: (gesture) ->
+    gesture.startOffset + gesture.distance
 
   _isAxisDominant: (a, b) ->
     (a - 2) > b and (a >= @_captureDistance)
@@ -108,7 +102,7 @@ type.overrideMethods
   __onTouchMove: (event) ->
     {gesture} = this
     gesture.__onTouchMove event
-    @isGranted and @offset.value = @_computeOffset gesture
+    @_isGranted and @offset.value = @_computeOffset gesture
     @_events.emit "didTouchMove", [ gesture, event ]
 
   __onTouchEnd: (event) ->

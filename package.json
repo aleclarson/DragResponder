@@ -1,15 +1,14 @@
 {
-  "name": "draggable",
+  "name": "Draggable",
   "version": "2.0.0",
   "main": "js/Draggable",
   "dependencies": {
     "LazyVar": "aleclarson/LazyVar#2.1.0",
     "OneOf": "aleclarson/OneOf#1.0.0",
     "Type": "aleclarson/Type#1.1.0",
-    "component": "aleclarson/component#2.0.0",
     "emptyFunction": "aleclarson/emptyFunction#1.0.0",
-    "fromArgs": "aleclarson/fromArgs#1.0.0",
-    "gesture": "aleclarson/gesture#2.0.0"
+    "gesture": "aleclarson/gesture#2.0.0",
+    "modx": "aleclarson/modx#1.0.0"
   },
   "lotus": {
     "plugins": [

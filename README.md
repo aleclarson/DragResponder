@@ -1,11 +1,17 @@
 
-# draggable 2.0.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
+# Draggable v2.0.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
 Built for [React Native](https://github.com/facebook/react-native)!
 
-`Draggable` is a subclass of [`Gesture.Responder`](https://github.com/aleclarson/gesture). It provides uni-directional movement tracking.
+> A subclass of [`Gesture.Responder`](https://github.com/aleclarson/gesture) that provides uni-directional movement tracking.
 
-### Draggable.optionTypes
+- Compatible with React Native **v0.22.x**
+
+```coffee
+Draggable = require "Draggable"
+```
+
+### Options
 
 ```coffee
 # Either "x" or "y".
@@ -19,7 +25,7 @@ canDrag: Function
 captureDistance: Number
 ```
 
-### Draggable.properties
+### Properties
 
 ```coffee
 # Defaults to 'options.axis'
@@ -31,7 +37,14 @@ drag.axis
 drag.offset
 ```
 
-### Draggable.Gesture.properties
+-
+
+## Draggable.Gesture
+
+> The `Draggable.Gesture` type represents a series
+> of touch events that have been tracked as a single gesture.
+
+### Properties
 
 ```coffee
 # The value of 'drag.offset' when the gesture began.

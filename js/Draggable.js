@@ -1,12 +1,10 @@
-var Axis, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, fromArgs, type;
+var Axis, Gesture, LazyVar, NativeValue, Responder, Type, emptyFunction, type;
 
-NativeValue = require("component").NativeValue;
+NativeValue = require("modx/native").NativeValue;
 
 Responder = require("gesture").Responder;
 
 emptyFunction = require("emptyFunction");
-
-fromArgs = require("fromArgs");
 
 LazyVar = require("LazyVar");
 
@@ -23,22 +21,18 @@ type.inherits(Responder);
 type.defineOptions({
   axis: Axis.isRequired,
   offset: Number.withDefault(0),
-  inverse: Boolean.withDefault(false),
   captureDistance: Number.withDefault(10),
   canDrag: Function.withDefault(emptyFunction.thatReturnsTrue),
   shouldRespondOnStart: Function.withDefault(emptyFunction.thatReturnsFalse),
   shouldCaptureOnMove: Function.withDefault(emptyFunction.thatReturnsTrue)
 });
 
-type.defineFrozenValues({
-  axis: fromArgs("axis"),
-  offset: function(options) {
-    return NativeValue(options.offset);
-  },
-  _inverse: fromArgs("inverse"),
-  _captureDistance: fromArgs("captureDistance"),
-  _lockedAxis: function() {
-    return LazyVar((function(_this) {
+type.defineFrozenValues(function(options) {
+  return {
+    axis: options.axis,
+    offset: NativeValue(options.offset),
+    _captureDistance: options.captureDistance,
+    _lockedAxis: LazyVar((function(_this) {
       return function() {
         var dx, dy;
         dx = Math.abs(_this.gesture.dx);
@@ -51,20 +45,19 @@ type.defineFrozenValues({
         }
         return null;
       };
-    })(this));
-  }
+    })(this))
+  };
 });
 
-type.defineValues({
-  _canDrag: fromArgs("canDrag")
+type.defineValues(function(options) {
+  return {
+    _canDrag: options.canDrag
+  };
 });
 
 type.defineMethods({
-  _computeOffset: function(arg) {
-    var distance, startOffset;
-    startOffset = arg.startOffset, distance = arg.distance;
-    this._inverse && (distance *= -1);
-    return startOffset + distance;
+  _computeOffset: function(gesture) {
+    return gesture.startOffset + gesture.distance;
   },
   _isAxisDominant: function(a, b) {
     return (a - 2) > b && (a >= this._captureDistance);
@@ -128,7 +121,7 @@ type.overrideMethods({
     var gesture;
     gesture = this.gesture;
     gesture.__onTouchMove(event);
-    this.isGranted && (this.offset.value = this._computeOffset(gesture));
+    this._isGranted && (this.offset.value = this._computeOffset(gesture));
     return this._events.emit("didTouchMove", [gesture, event]);
   },
   __onTouchEnd: function(event) {
