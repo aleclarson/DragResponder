@@ -27,6 +27,8 @@ type.defineFrozenValues (options) ->
 
   offset: NativeValue options.offset
 
+  isHorizontal: options.axis is "x"
+
   _captureDistance: options.captureDistance
 
   _lockedAxis: LazyVar =>

@@ -31,6 +31,7 @@ type.defineFrozenValues(function(options) {
   return {
     axis: options.axis,
     offset: NativeValue(options.offset),
+    isHorizontal: options.axis === "x",
     _captureDistance: options.captureDistance,
     _lockedAxis: LazyVar((function(_this) {
       return function() {
