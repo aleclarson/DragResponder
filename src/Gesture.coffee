@@ -11,30 +11,30 @@ type.inherits Gesture
 type.defineOptions
   axis: Axis.isRequired
 
-type.defineProperties
+type.defineGetters
 
-  startOffset: get: ->
+  startOffset: ->
     @_startOffset
 
-  startPosition: get: ->
+  startPosition: ->
     if @_horizontal then @x0 else @y0
 
-  position: get: ->
+  startDistance: ->
+    if @_horizontal then @dx0 else @dy0
+
+  position: ->
     if @_horizontal then @x else @y
 
-  distance: get: ->
-    if @_horizontal then @dx - @_grantDX
-    else @dy - @_grantDY
+  distance: ->
+    if @_horizontal then @dx - @dx0 else @dy - @dy0
 
-  velocity: get: ->
+  velocity: ->
     if @_horizontal then @vx else @vy
 
-type.defineFrozenValues
+type.defineValues (options) ->
 
-  _horizontal: (options) -> options.axis is "x"
+  _startOffset: options.startOffset
 
-type.defineValues
-
-  _startOffset: null
+  _horizontal: options.axis is "x"
 
 module.exports = type.build()

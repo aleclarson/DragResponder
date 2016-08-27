@@ -92,6 +92,7 @@ type.defineMethods({
 type.overrideMethods({
   __createGesture: function(options) {
     options.axis = this.axis;
+    options.startOffset = this.offset.value;
     return Gesture(options);
   },
   __shouldRespondOnStart: function() {

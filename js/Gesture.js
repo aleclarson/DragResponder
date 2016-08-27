@@ -14,58 +14,52 @@ type.defineOptions({
   axis: Axis.isRequired
 });
 
-type.defineProperties({
-  startOffset: {
-    get: function() {
-      return this._startOffset;
+type.defineGetters({
+  startOffset: function() {
+    return this._startOffset;
+  },
+  startPosition: function() {
+    if (this._horizontal) {
+      return this.x0;
+    } else {
+      return this.y0;
     }
   },
-  startPosition: {
-    get: function() {
-      if (this._horizontal) {
-        return this.x0;
-      } else {
-        return this.y0;
-      }
+  startDistance: function() {
+    if (this._horizontal) {
+      return this.dx0;
+    } else {
+      return this.dy0;
     }
   },
-  position: {
-    get: function() {
-      if (this._horizontal) {
-        return this.x;
-      } else {
-        return this.y;
-      }
+  position: function() {
+    if (this._horizontal) {
+      return this.x;
+    } else {
+      return this.y;
     }
   },
-  distance: {
-    get: function() {
-      if (this._horizontal) {
-        return this.dx - this._grantDX;
-      } else {
-        return this.dy - this._grantDY;
-      }
+  distance: function() {
+    if (this._horizontal) {
+      return this.dx - this.dx0;
+    } else {
+      return this.dy - this.dy0;
     }
   },
-  velocity: {
-    get: function() {
-      if (this._horizontal) {
-        return this.vx;
-      } else {
-        return this.vy;
-      }
+  velocity: function() {
+    if (this._horizontal) {
+      return this.vx;
+    } else {
+      return this.vy;
     }
   }
 });
 
-type.defineFrozenValues({
-  _horizontal: function(options) {
-    return options.axis === "x";
-  }
-});
-
-type.defineValues({
-  _startOffset: null
+type.defineValues(function(options) {
+  return {
+    _startOffset: options.startOffset,
+    _horizontal: options.axis === "x"
+  };
 });
 
 module.exports = type.build();

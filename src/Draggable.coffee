@@ -83,6 +83,7 @@ type.overrideMethods
 
   __createGesture: (options) ->
     options.axis = @axis
+    options.startOffset = @offset.value
     return Gesture options
 
   __shouldRespondOnStart: ->
