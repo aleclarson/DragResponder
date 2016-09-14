@@ -42,6 +42,13 @@ type.defineValues (options) ->
 
   _canDrag: options.canDrag
 
+type.initInstance ->
+  @offset.__attach()
+
+#
+# Prototype
+#
+
 type.defineMethods
 
   _computeOffset: (gesture) ->
@@ -106,7 +113,7 @@ type.overrideMethods
     {gesture} = this
     gesture.__onTouchMove event
     @_isGranted and @offset.value = @_computeOffset gesture
-    @_events.emit "didTouchMove", [ gesture, event ]
+    @__events.didTouchMove gesture, event
 
   __onTouchEnd: (event) ->
 
