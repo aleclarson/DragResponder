@@ -2,6 +2,7 @@
 {NativeValue} = require "modx/native"
 {Responder} = require "gesture"
 
+ResponderSyntheticEvent = require "ResponderSyntheticEvent"
 emptyFunction = require "emptyFunction"
 LazyVar = require "LazyVar"
 Type = require "Type"
@@ -48,6 +49,10 @@ type.initInstance ->
 #
 # Prototype
 #
+
+type.defineEvents
+
+  didDrag: {gesture: Gesture, event: ResponderSyntheticEvent}
 
 type.defineMethods
 
@@ -112,7 +117,9 @@ type.overrideMethods
   __onTouchMove: (event) ->
     {gesture} = this
     gesture.__onTouchMove event
-    @_isGranted and @offset.value = @_computeOffset gesture
+    if @_isGranted
+      @offset.value = @_computeOffset gesture
+      @__events.didDrag gesture, event
     @__events.didTouchMove gesture, event
 
   __onTouchEnd: (event) ->

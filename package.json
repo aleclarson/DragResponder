@@ -16,5 +16,8 @@
     "emptyFunction": "aleclarson/emptyFunction#1.0.0",
     "gesture": "aleclarson/gesture#2.0.1",
     "modx": "aleclarson/modx#1.0.0"
-  }
+  },
+  "implicitDependencies": [
+    "ResponderSyntheticEvent"
+  ]
 }
