@@ -22,6 +22,8 @@ type.defineOptions
   shouldRespondOnStart: Function.withDefault emptyFunction.thatReturnsFalse
   shouldCaptureOnMove: Function.withDefault emptyFunction.thatReturnsTrue
 
+type.defineStatics {Gesture, Axis}
+
 type.defineFrozenValues (options) ->
 
   axis: options.axis
@@ -56,6 +58,9 @@ type.defineEvents
 
 type.defineMethods
 
+  detach: ->
+    @offset.__detach()
+
   _computeOffset: (gesture) ->
     gesture.startOffset + gesture.distance
 
@@ -63,11 +68,9 @@ type.defineMethods
     (a - 2) > b and (a >= @_captureDistance)
 
   _canDragOnStart: ->
-
     unless @_canDrag @gesture
       @terminate()
       return no
-
     return yes
 
   _canDragOnMove: ->
@@ -131,10 +134,8 @@ type.overrideMethods
     @__super arguments
 
   __onGrant: ->
-    @offset.animation?.stop()
+    @offset.stopAnimation()
     @gesture._startOffset = @offset.value
     @__super arguments
-
-type.defineStatics { Gesture, Axis }
 
 module.exports = type.build()
