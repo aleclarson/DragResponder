@@ -10,6 +10,7 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
+    "Event": "aleclarson/Event#2.0.1",
     "LazyVar": "aleclarson/LazyVar#2.1.0",
     "OneOf": "aleclarson/OneOf#1.0.0",
     "Type": "aleclarson/Type#1.1.0",
