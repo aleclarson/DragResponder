@@ -5,6 +5,7 @@
 ResponderSyntheticEvent = require "ResponderSyntheticEvent"
 emptyFunction = require "emptyFunction"
 LazyVar = require "LazyVar"
+Event = require "Event"
 Type = require "Type"
 
 Gesture = require "./Gesture"
@@ -52,7 +53,7 @@ type.initInstance ->
 # Prototype
 #
 
-type.defineEvents
+type.addMixin Event.Mixin,
 
   didDrag: {gesture: Gesture, event: ResponderSyntheticEvent}
 
