@@ -1,5 +1,5 @@
 
-{NativeValue} = require "modx/native"
+{AnimatedValue} = require "Animated"
 {Responder} = require "gesture"
 
 ResponderSyntheticEvent = require "ResponderSyntheticEvent"
@@ -29,7 +29,7 @@ type.defineFrozenValues (options) ->
 
   axis: options.axis
 
-  offset: NativeValue options.offset
+  offset: AnimatedValue options.offset
 
   isHorizontal: options.axis is "x"
 
@@ -46,9 +46,6 @@ type.defineValues (options) ->
 
   _canDrag: options.canDrag
 
-type.initInstance ->
-  @offset.__attach()
-
 #
 # Prototype
 #
@@ -58,9 +55,6 @@ type.addMixin Event.Mixin,
   didDrag: {gesture: Gesture, event: ResponderSyntheticEvent}
 
 type.defineMethods
-
-  detach: ->
-    @offset.__detach()
 
   _computeOffset: (gesture) ->
     gesture.startOffset + gesture.distance
@@ -99,7 +93,7 @@ type.overrideMethods
 
   __createGesture: (options) ->
     options.axis = @axis
-    options.startOffset = @offset.value
+    options.startOffset = @offset.get()
     return Gesture options
 
   __shouldRespondOnStart: ->
@@ -122,7 +116,7 @@ type.overrideMethods
     {gesture} = this
     gesture.__onTouchMove event
     if @_isGranted
-      @offset.value = @_computeOffset gesture
+      @offset.set @_computeOffset gesture
       @__events.didDrag gesture, event
     @__events.didTouchMove gesture, event
 
@@ -136,7 +130,7 @@ type.overrideMethods
 
   __onGrant: ->
     @offset.stopAnimation()
-    @gesture._startOffset = @offset.value
+    @gesture._startOffset = @offset.get()
     @__super arguments
 
 module.exports = type.build()
