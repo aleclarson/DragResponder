@@ -113,12 +113,11 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
-    {gesture} = this
-    gesture.__onTouchMove event
+    @gesture.__onTouchMove event
     if @_isGranted
-      @offset.set @_computeOffset gesture
-      @__events.didDrag gesture, event
-    @__events.didTouchMove gesture, event
+      @offset.set @_computeOffset @gesture
+      @__events.didDrag @gesture, event
+    @__events.didTouchMove @gesture, event
 
   __onTouchEnd: (event) ->
 
