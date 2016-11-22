@@ -11,6 +11,8 @@ Type = require "Type"
 Gesture = require "./Gesture"
 Axis = require "./Axis"
 
+TouchEvent = {gesture: Gesture, event: ResponderSyntheticEvent}
+
 type = Type "Draggable"
 
 type.inherits Responder
@@ -44,15 +46,13 @@ type.defineFrozenValues (options) ->
 
 type.defineValues (options) ->
 
+  didDrag: Event {async: no, argTypes: TouchEvent}
+
   _canDrag: options.canDrag
 
 #
 # Prototype
 #
-
-type.addMixin Event.Mixin,
-
-  didDrag: {gesture: Gesture, event: ResponderSyntheticEvent}
 
 type.defineMethods
 
@@ -116,8 +116,8 @@ type.overrideMethods
     @gesture.__onTouchMove event
     if @_isGranted
       @offset.set @_computeOffset @gesture
-      @__events.didDrag @gesture, event
-    @__events.didTouchMove @gesture, event
+      @didDrag.emit @gesture, event
+    @didTouchMove.emit @gesture, event
 
   __onTouchEnd: (event) ->
 
