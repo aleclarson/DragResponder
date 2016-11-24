@@ -1,5 +1,5 @@
 
-# Draggable v2.0.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
+# Draggable v2.0.1 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
 Built for [React Native](https://github.com/facebook/react-native)!
 
