@@ -10,6 +10,7 @@ type.inherits Gesture
 
 type.defineOptions
   axis: Axis.isRequired
+  startOffset: Number.isRequired
 
 type.defineGetters
 
