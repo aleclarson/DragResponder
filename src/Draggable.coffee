@@ -62,10 +62,9 @@ type.defineMethods
     (a - 2) > b and (a >= @_captureDistance)
 
   _canDragOnStart: ->
-    unless @_canDrag @gesture
-      @terminate()
-      return no
-    return yes
+    return yes if @_canDrag @gesture
+    @terminate()
+    return no
 
   _canDragOnMove: ->
 
@@ -112,11 +111,14 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
+
     @gesture.__onTouchMove event
     if @_isGranted
       @offset.set @_computeOffset @gesture
       @didDrag.emit @gesture, event
+
     @didTouchMove.emit @gesture, event
+    return
 
   __onTouchEnd: (event) ->
 
