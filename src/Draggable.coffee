@@ -11,8 +11,6 @@ Type = require "Type"
 Gesture = require "./Gesture"
 Axis = require "./Axis"
 
-TouchEvent = {gesture: Gesture, event: ResponderSyntheticEvent}
-
 type = Type "Draggable"
 
 type.inherits Responder
@@ -46,7 +44,8 @@ type.defineFrozenValues (options) ->
 
 type.defineValues (options) ->
 
-  didDrag: Event {async: no, argTypes: TouchEvent}
+  didDrag: Event.sync
+    argTypes: {gesture: Gesture, event: ResponderSyntheticEvent}
 
   _canDrag: options.canDrag
 
@@ -63,10 +62,9 @@ type.defineMethods
     (a - 2) > b and (a >= @_captureDistance)
 
   _canDragOnStart: ->
-    unless @_canDrag @gesture
-      @terminate()
-      return no
-    return yes
+    return yes if @_canDrag @gesture
+    @terminate()
+    return no
 
   _canDragOnMove: ->
 
@@ -113,16 +111,18 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
+
     @gesture.__onTouchMove event
     if @_isGranted
       @offset.set @_computeOffset @gesture
       @didDrag.emit @gesture, event
+
     @didTouchMove.emit @gesture, event
+    return
 
   __onTouchEnd: (event) ->
 
-    {touches} = event.nativeEvent
-    if touches.length is 0
+    if @gesture.touchHistory.numberActiveTouches is 0
       @_lockedAxis.reset()
 
     @__super arguments
