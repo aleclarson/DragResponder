@@ -1,15 +1,7 @@
 
 # Draggable v2.0.1 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
-Built for [React Native](https://github.com/facebook/react-native)!
-
-> A subclass of [`Gesture.Responder`](https://github.com/aleclarson/gesture) that provides uni-directional movement tracking.
-
-- Compatible with React Native **v0.22.x**
-
-```coffee
-Draggable = require "Draggable"
-```
+A [`Gesture.Responder`](https://github.com/aleclarson/gesture) that provides uni-directional movement tracking.
 
 ### Options
 
@@ -17,12 +9,16 @@ Draggable = require "Draggable"
 # Either "x" or "y".
 axis: Draggable.Axis
 
-# Return false when dragging should be prevented.
-canDrag: Function
+# The default value of `this.offset`.
+# Defaults to 0.
+offset: Number
 
 # The required distance travelled before a drag is recognized.
 # Defaults to 10.
 captureDistance: Number
+
+# Return `false` when dragging should be prevented.
+canDrag: Function
 ```
 
 ### Properties
@@ -35,6 +31,12 @@ drag.axis
 # Feel free to animate this value.
 # Defaults to zero.
 drag.offset
+
+# Equals `true` if the axis equals "x".
+drag.isHorizontal
+
+# An `Event` that emits when dragging occurs.
+drag.didDrag ->
 ```
 
 -
@@ -52,6 +54,9 @@ gesture.startOffset
 
 # The absolute position when the gesture began.
 gesture.startPosition
+
+# The distance travelled in the first move event.
+gesture.startDistance
 
 # The absolute position at the current time.
 gesture.position
