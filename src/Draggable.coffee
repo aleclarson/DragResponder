@@ -11,8 +11,6 @@ Type = require "Type"
 Gesture = require "./Gesture"
 Axis = require "./Axis"
 
-TouchEvent = {gesture: Gesture, event: ResponderSyntheticEvent}
-
 type = Type "Draggable"
 
 type.inherits Responder
@@ -46,7 +44,8 @@ type.defineFrozenValues (options) ->
 
 type.defineValues (options) ->
 
-  didDrag: Event {async: no, argTypes: TouchEvent}
+  didDrag: Event.sync
+    argTypes: {gesture: Gesture, event: ResponderSyntheticEvent}
 
   _canDrag: options.canDrag
 
