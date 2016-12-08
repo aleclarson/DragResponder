@@ -11,7 +11,7 @@ Type = require "Type"
 Gesture = require "./Gesture"
 Axis = require "./Axis"
 
-type = Type "Draggable"
+type = Type "DragResponder"
 
 type.inherits Responder
 

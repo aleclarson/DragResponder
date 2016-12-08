@@ -1,7 +1,7 @@
 {
-  "name": "Draggable",
-  "version": "2.0.2",
-  "main": "js/Draggable",
+  "name": "DragResponder",
+  "version": "2.1.0",
+  "main": "js/DragResponder",
   "plugins": [
     "lotus-coffee"
   ],

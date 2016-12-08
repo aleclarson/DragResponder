@@ -1,5 +1,5 @@
 
-# Draggable v2.0.2 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
+# DragResponder v2.1.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
 A [`Gesture.Responder`](https://github.com/aleclarson/gesture) that provides uni-directional movement tracking.
 
@@ -7,7 +7,7 @@ A [`Gesture.Responder`](https://github.com/aleclarson/gesture) that provides uni
 
 ```coffee
 # Either "x" or "y".
-axis: Draggable.Axis
+axis: String
 
 # The default value of `this.offset`.
 # Defaults to 0.
@@ -41,10 +41,9 @@ drag.didDrag ->
 
 -
 
-## Draggable.Gesture
+## DragResponder.Gesture
 
-> The `Draggable.Gesture` type represents a series
-> of touch events that have been tracked as a single gesture.
+Extends the `Gesture` type to support common dragging-related properties. 
 
 ### Properties
 
