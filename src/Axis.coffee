@@ -1,4 +1,4 @@
 
 OneOf = require "OneOf"
 
-module.exports = OneOf "DraggableAxis", [ "x", "y" ]
+module.exports = OneOf "DragResponder_Axis", "x y"
