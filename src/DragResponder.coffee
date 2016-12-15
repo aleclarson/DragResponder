@@ -44,7 +44,7 @@ type.defineFrozenValues (options) ->
 
 type.defineValues (options) ->
 
-  didDrag: Event.sync
+  didDrag: Event
     argTypes: {gesture: Gesture, event: ResponderSyntheticEvent}
 
   _canDrag: options.canDrag
