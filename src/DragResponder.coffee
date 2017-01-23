@@ -121,8 +121,9 @@ type.overrideMethods
     return
 
   __onTouchEnd: (event) ->
+    {touches} = event.nativeEvent
 
-    if @gesture.touchHistory.numberActiveTouches is 0
+    if touches.length is 0
       @_lockedAxis.reset()
 
     @__super arguments
