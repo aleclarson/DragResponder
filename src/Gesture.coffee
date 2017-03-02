@@ -8,9 +8,11 @@ type = Type "DragResponder_Gesture"
 
 type.inherits Gesture
 
-type.defineOptions
-  axis: Axis.isRequired
-  startOffset: Number.isRequired
+type.defineArgs ->
+  required: yes
+  types:
+    axis: Axis
+    startOffset: Number
 
 type.defineGetters
 
