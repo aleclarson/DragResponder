@@ -5,7 +5,7 @@
 ResponderSyntheticEvent = require "ResponderSyntheticEvent"
 emptyFunction = require "emptyFunction"
 LazyVar = require "LazyVar"
-Event = require "Event"
+Event = require "eve"
 Type = require "Type"
 
 Gesture = require "./Gesture"
