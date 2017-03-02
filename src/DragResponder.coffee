@@ -15,13 +15,23 @@ type = Type "DragResponder"
 
 type.inherits Responder
 
-type.defineOptions
-  axis: Axis.isRequired
-  offset: Number.withDefault 0
-  captureDistance: Number.withDefault 10
-  canDrag: Function.withDefault emptyFunction.thatReturnsTrue
-  shouldRespondOnStart: Function.withDefault emptyFunction.thatReturnsFalse
-  shouldCaptureOnMove: Function.withDefault emptyFunction.thatReturnsTrue
+type.defineArgs ->
+
+  required: yes
+  types:
+    axis: Axis
+    offset: Number
+    captureDistance: Number
+    canDrag: Function
+    shouldRespondOnStart: Function
+    shouldCaptureOnMove: Function
+
+  defaults:
+    offset: 0
+    captureDistance: 10
+    canDrag: emptyFunction.thatReturnsTrue
+    shouldRespondOnStart: emptyFunction.thatReturnsFalse
+    shouldCaptureOnMove: emptyFunction.thatReturnsTrue
 
 type.defineStatics {Gesture, Axis}
 
