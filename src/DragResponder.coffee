@@ -2,7 +2,7 @@
 {AnimatedValue} = require "Animated"
 {Responder} = require "gesture"
 
-ResponderSyntheticEvent = require "ResponderSyntheticEvent"
+ResponderSyntheticEvent = require "react-native/lib/ResponderSyntheticEvent"
 emptyFunction = require "emptyFunction"
 LazyVar = require "LazyVar"
 Event = require "eve"
