@@ -20,7 +20,7 @@ type.defineArgs ->
   required: yes
   types:
     axis: Axis
-    offset: Number
+    offset: Number.or AnimatedValue
     captureDistance: Number
     canDrag: Function
     shouldRespondOnStart: Function
@@ -39,7 +39,7 @@ type.defineFrozenValues (options) ->
 
   axis: options.axis
 
-  offset: AnimatedValue options.offset
+  offset: @_createOffset options.offset
 
   isHorizontal: options.axis is "x"
 
@@ -64,6 +64,10 @@ type.defineValues (options) ->
 #
 
 type.defineMethods
+
+  _createOffset: (offset) ->
+    return offset if offset instanceof AnimatedValue
+    return AnimatedValue offset
 
   _computeOffset: (gesture) ->
     gesture.startOffset + gesture.distance
