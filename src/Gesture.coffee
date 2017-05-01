@@ -13,20 +13,10 @@ type.defineArgs ->
 
 type.defineGetters
 
-  startPosition: ->
-    if @_horizontal
-    then @x0
-    else @y0
-
   startDistance: ->
     if @_horizontal
     then @dx0
     else @dy0
-
-  position: ->
-    if @_horizontal
-    then @x
-    else @y
 
   distance: ->
     if @_horizontal
