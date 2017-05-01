@@ -55,6 +55,8 @@ type.defineFrozenValues (options) ->
 
 type.defineValues (options) ->
 
+  lastVelocity: null
+
   _canDrag: options.canDrag
 
 #
@@ -136,9 +138,14 @@ type.overrideMethods
 
   __onGrant: ->
     gesture = @_gesture
+    @lastVelocity = null
     @offset.stopAnimation()
     @__super arguments
     gesture.startOffset = @offset.get() - gesture.distance
     return
+
+  __onRelease: ->
+    @lastVelocity = @_gesture.velocity
+    return @__super arguments
 
 module.exports = type.build()
