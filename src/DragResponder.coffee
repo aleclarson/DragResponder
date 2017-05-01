@@ -141,6 +141,7 @@ type.overrideMethods
     @lastVelocity = null
     @offset.stopAnimation()
     @__super arguments
+    @_lockedAxis.set @axis
     gesture.startOffset = @offset.get() - gesture.distance
     return
 
