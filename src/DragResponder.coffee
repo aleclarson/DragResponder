@@ -46,8 +46,9 @@ type.defineFrozenValues (options) ->
   _captureDistance: options.captureDistance
 
   _lockedAxis: LazyVar =>
-    dx = Math.abs @gesture.dx
-    dy = Math.abs @gesture.dy
+    gesture = @_gesture
+    dx = Math.abs gesture.dx
+    dy = Math.abs gesture.dy
     return "x" if @_isAxisDominant dx, dy
     return "y" if @_isAxisDominant dy, dx
     return null
@@ -66,20 +67,17 @@ type.defineMethods
     return offset if offset instanceof AnimatedValue
     return AnimatedValue offset
 
-  _computeOffset: (gesture) ->
-    gesture.startOffset + gesture.distance
-
   _isAxisDominant: (a, b) ->
     (a - 2) > b and (a >= @_captureDistance)
 
   _canDragOnStart: ->
-    return yes if @_canDrag @gesture
+    return yes if @_canDrag @_gesture
     @terminate()
     return no
 
   _canDragOnMove: ->
 
-    unless @_canDrag @gesture
+    unless @_canDrag @_gesture
       @terminate()
       return no
 
@@ -122,9 +120,10 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
-    @gesture.__onTouchMove event
-    @_isGranted and @offset.set @_computeOffset @gesture
-    @didTouchMove.emit @gesture, event
+    gesture = @_gesture
+    gesture.__onTouchMove event
+    @_isGranted and @offset.set gesture.startOffset + gesture.distance
+    @didTouchMove.emit gesture
     return
 
   __onTouchEnd: (event) ->
@@ -136,9 +135,10 @@ type.overrideMethods
     @__super arguments
 
   __onGrant: ->
+    gesture = @_gesture
     @offset.stopAnimation()
     @__super arguments
-    @gesture.startOffset = @offset.get() - @gesture.distance
+    gesture.startOffset = @offset.get() - gesture.distance
     return
 
 module.exports = type.build()
