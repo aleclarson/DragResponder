@@ -9,14 +9,9 @@ type.inherits Gesture
 
 type.defineArgs ->
   required: yes
-  types:
-    axis: String
-    startOffset: Number
+  types: {axis: String}
 
 type.defineGetters
-
-  startOffset: ->
-    @_startOffset
 
   startPosition: ->
     if @_horizontal
@@ -45,8 +40,6 @@ type.defineGetters
     @_velocity.direction
 
 type.defineValues (options) ->
-
-  _startOffset: options.startOffset
 
   _horizontal: options.axis is "x"
 

@@ -145,6 +145,7 @@ type.overrideMethods
   __onGrant: ->
     @offset.stopAnimation()
     @__super arguments
-    @gesture._startOffset = @offset.get() - @gesture.distance
+    @gesture.startOffset = @offset.get() - @gesture.distance
+    return
 
 module.exports = type.build()
