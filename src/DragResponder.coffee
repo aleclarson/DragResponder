@@ -54,9 +54,6 @@ type.defineFrozenValues (options) ->
 
 type.defineValues (options) ->
 
-  didDrag: Event
-    argTypes: {gesture: Gesture, event: ResponderSyntheticEvent}
-
   _canDrag: options.canDrag
 
 #
@@ -125,12 +122,8 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
-
     @gesture.__onTouchMove event
-    if @_isGranted
-      @offset.set @_computeOffset @gesture
-      @didDrag.emit @gesture, event
-
+    @_isGranted and @offset.set @_computeOffset @gesture
     @didTouchMove.emit @gesture, event
     return
 
