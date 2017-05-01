@@ -1,4 +1,5 @@
 
+Velocity = require "Velocity"
 Gesture = require "gesture"
 Type = require "Type"
 
@@ -40,14 +41,29 @@ type.defineGetters
     else @dy - @dy0
 
   velocity: ->
-    if @_horizontal
-    then @vx
-    else @vy
+    @_velocity.get()
+
+  direction: ->
+    @_velocity.direction
 
 type.defineValues (options) ->
 
   _startOffset: options.startOffset
 
   _horizontal: options.axis is "x"
+
+  _velocity: Velocity {maxAge: 300}
+
+type.overrideMethods
+
+  __onTouchStart: ->
+    @__super arguments
+    @_velocity.reset()
+    return
+
+  __onTouchMove: ->
+    @__super arguments
+    @_velocity.update Date.now(), @distance
+    return
 
 module.exports = type.build()
