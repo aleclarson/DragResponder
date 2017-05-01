@@ -3,8 +3,6 @@ Velocity = require "Velocity"
 Gesture = require "gesture"
 Type = require "Type"
 
-Axis = require "./Axis"
-
 type = Type "DragResponder_Gesture"
 
 type.inherits Gesture
@@ -12,7 +10,7 @@ type.inherits Gesture
 type.defineArgs ->
   required: yes
   types:
-    axis: Axis
+    axis: String
     startOffset: Number
 
 type.defineGetters

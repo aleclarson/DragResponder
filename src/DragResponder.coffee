@@ -5,11 +5,11 @@
 ResponderSyntheticEvent = require "react-native/lib/ResponderSyntheticEvent"
 emptyFunction = require "emptyFunction"
 LazyVar = require "LazyVar"
+OneOf = require "OneOf"
 Event = require "eve"
 Type = require "Type"
 
 Gesture = require "./Gesture"
-Axis = require "./Axis"
 
 type = Type "DragResponder"
 
@@ -19,7 +19,7 @@ type.defineArgs ->
 
   required: yes
   types:
-    axis: Axis
+    axis: OneOf "x y"
     offset: Number.or AnimatedValue
     captureDistance: Number
     canDrag: Function
@@ -33,7 +33,7 @@ type.defineArgs ->
     shouldRespondOnStart: emptyFunction.thatReturnsFalse
     shouldCaptureOnMove: emptyFunction.thatReturnsTrue
 
-type.defineStatics {Gesture, Axis}
+type.defineStatics {Gesture}
 
 type.defineFrozenValues (options) ->
 
