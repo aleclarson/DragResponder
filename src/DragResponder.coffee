@@ -128,13 +128,12 @@ type.overrideMethods
     @didTouchMove.emit gesture
     return
 
-  __onTouchEnd: (event) ->
-    {touches} = event.nativeEvent
+  __onTouchEnd: ->
 
-    if touches.length is 0
+    if @_touchCount is 0
       @_lockedAxis.reset()
 
-    @__super arguments
+    return @__super arguments
 
   __onGrant: ->
     gesture = @_gesture
