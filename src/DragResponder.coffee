@@ -2,14 +2,14 @@
 {AnimatedValue} = require "Animated"
 {Responder} = require "gesture"
 
-ResponderSyntheticEvent = require "ResponderSyntheticEvent"
+ResponderSyntheticEvent = require "react-native/lib/ResponderSyntheticEvent"
 emptyFunction = require "emptyFunction"
 LazyVar = require "LazyVar"
+OneOf = require "OneOf"
 Event = require "eve"
 Type = require "Type"
 
 Gesture = require "./Gesture"
-Axis = require "./Axis"
 
 type = Type "DragResponder"
 
@@ -19,8 +19,8 @@ type.defineArgs ->
 
   required: yes
   types:
-    axis: Axis
-    offset: Number
+    axis: OneOf "x y"
+    offset: Number.or AnimatedValue
     captureDistance: Number
     canDrag: Function
     shouldRespondOnStart: Function
@@ -33,29 +33,29 @@ type.defineArgs ->
     shouldRespondOnStart: emptyFunction.thatReturnsFalse
     shouldCaptureOnMove: emptyFunction.thatReturnsTrue
 
-type.defineStatics {Gesture, Axis}
+type.defineStatics {Gesture}
 
 type.defineFrozenValues (options) ->
 
   axis: options.axis
 
-  offset: AnimatedValue options.offset
+  offset: @_createOffset options.offset
 
   isHorizontal: options.axis is "x"
 
   _captureDistance: options.captureDistance
 
   _lockedAxis: LazyVar =>
-    dx = Math.abs @gesture.dx
-    dy = Math.abs @gesture.dy
+    gesture = @_gesture
+    dx = Math.abs gesture.dx
+    dy = Math.abs gesture.dy
     return "x" if @_isAxisDominant dx, dy
     return "y" if @_isAxisDominant dy, dx
     return null
 
 type.defineValues (options) ->
 
-  didDrag: Event
-    argTypes: {gesture: Gesture, event: ResponderSyntheticEvent}
+  lastVelocity: null
 
   _canDrag: options.canDrag
 
@@ -65,20 +65,21 @@ type.defineValues (options) ->
 
 type.defineMethods
 
-  _computeOffset: (gesture) ->
-    gesture.startOffset + gesture.distance
+  _createOffset: (offset) ->
+    return offset if offset instanceof AnimatedValue
+    return AnimatedValue offset
 
   _isAxisDominant: (a, b) ->
     (a - 2) > b and (a >= @_captureDistance)
 
   _canDragOnStart: ->
-    return yes if @_canDrag @gesture
+    return yes if @_canDrag @_gesture
     @terminate()
     return no
 
   _canDragOnMove: ->
 
-    unless @_canDrag @gesture
+    unless @_canDrag @_gesture
       @terminate()
       return no
 
@@ -121,26 +122,30 @@ type.overrideMethods
     return @__super arguments
 
   __onTouchMove: (event) ->
-
-    @gesture.__onTouchMove event
-    if @_isGranted
-      @offset.set @_computeOffset @gesture
-      @didDrag.emit @gesture, event
-
-    @didTouchMove.emit @gesture, event
+    gesture = @_gesture
+    gesture.__onTouchMove event
+    @_isGranted and @offset.set gesture.startOffset + gesture.distance
+    @didTouchMove.emit gesture
     return
 
-  __onTouchEnd: (event) ->
-    {touches} = event.nativeEvent
+  __onTouchEnd: ->
 
-    if touches.length is 0
+    if @_touchCount is 0
       @_lockedAxis.reset()
 
-    @__super arguments
+    return @__super arguments
 
   __onGrant: ->
+    gesture = @_gesture
+    @lastVelocity = null
     @offset.stopAnimation()
     @__super arguments
-    @gesture._startOffset = @offset.get() - @gesture.distance
+    @_lockedAxis.set @axis
+    gesture.startOffset = @offset.get() - gesture.distance
+    return
+
+  __onRelease: ->
+    @lastVelocity = @_gesture.velocity
+    return @__super arguments
 
 module.exports = type.build()
